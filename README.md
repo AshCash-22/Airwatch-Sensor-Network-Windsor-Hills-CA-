@@ -1,1 +1,1 @@
-# AirWatch-A-Low-Cost-Sensor-Network-for-Community-Air-Quality-Monitoring-Near-the-Inglewood-Oil-Field
+# AirWatch-A-Low-Cost-Sensor-Network-for-Community-Air-Quality-Monitoring
