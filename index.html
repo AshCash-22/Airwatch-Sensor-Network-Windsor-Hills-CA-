@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AirWatch — Windsor Hills / View Park Air Quality</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#171D1A;
+    --paper:#EEF0EA;
+    --paper-dim:#E2E5DC;
+    --line: rgba(23,29,26,0.12);
+    --sky:#3E6E8E;
+    --sky-dim: rgba(62,110,142,0.12);
+    --amber:#C98A3B;
+    --good:#4C8B5D;
+    --bad:#B24C3C;
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'Source Serif 4', serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ---------- HERO / HORIZON ---------- */
+  .horizon{
+    position:relative;
+    min-height:82vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:2.5rem 6vw 3rem;
+    background: linear-gradient(180deg, #3E6E8E 0%, #6F9AAE 35%, #C7C3AE 70%, #EEF0EA 100%);
+    transition: background 1.2s ease;
+    overflow:hidden;
+  }
+  .horizon::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.5) 0, transparent 60%),
+      radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,.4) 0, transparent 60%),
+      radial-gradient(1.5px 1.5px at 60% 30%, rgba(255,255,255,.35) 0, transparent 60%);
+    opacity:.5;
+    pointer-events:none;
+  }
+  .nav{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:1.75rem 6vw 0;
+    font-family:var(--display);
+    font-size:.85rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.92);
+    z-index:2;
+  }
+  .nav a{ text-decoration:none; opacity:.85; }
+  .nav a:hover{ opacity:1; }
+  .nav-links{ display:flex; gap:1.75rem; }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:.8rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.85);
+    margin:0 0 1rem;
+    z-index:2;
+    position:relative;
+  }
+  h1.wordmark{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(2.8rem, 9vw, 6.2rem);
+    line-height:.95;
+    margin:0 0 1.2rem;
+    color:#fff;
+    text-shadow: 0 2px 30px rgba(0,0,0,0.08);
+    z-index:2;
+    position:relative;
+  }
+  .hero-tagline{
+    max-width:38rem;
+    font-size:1.15rem;
+    line-height:1.55;
+    color:rgba(255,255,255,0.94);
+    margin:0 0 2.4rem;
+    z-index:2;
+    position:relative;
+  }
+
+  .reading-panel{
+    display:flex;
+    align-items:flex-end;
+    gap:2.5rem;
+    flex-wrap:wrap;
+    z-index:2;
+    position:relative;
+  }
+  .reading-now{
+    display:flex;
+    align-items:baseline;
+    gap:.6rem;
+  }
+  .reading-now .num{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(3rem,7vw,4.5rem);
+    color:#fff;
+    line-height:1;
+  }
+  .reading-now .unit{
+    font-family:var(--mono);
+    font-size:1rem;
+    color:rgba(255,255,255,0.85);
+  }
+  .status-pill{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:.95rem;
+    letter-spacing:.03em;
+    padding:.55rem 1.1rem;
+    border-radius:100px;
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.4);
+    color:#fff;
+    backdrop-filter: blur(6px);
+  }
+  .updated-note{
+    font-family:var(--mono);
+    font-size:.78rem;
+    color:rgba(255,255,255,0.75);
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{ padding:5rem 6vw; }
+  .section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:2rem;
+    margin-bottom:2.5rem;
+    border-bottom:1px solid var(--line);
+    padding-bottom:1.4rem;
+    flex-wrap:wrap;
+  }
+  .section-head h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:1.9rem;
+    margin:0;
+  }
+  .section-head p{
+    font-family:var(--mono);
+    font-size:.82rem;
+    color:rgba(23,29,26,0.6);
+    max-width:26rem;
+    margin:0;
+  }
+
+  /* ---------- INSTRUMENT GRID ---------- */
+  .instruments{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .instrument{
+    background:var(--paper);
+    padding:1.6rem 1.6rem 1.2rem;
+    display:flex;
+    flex-direction:column;
+    min-height:230px;
+  }
+  .instrument .label{
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:rgba(23,29,26,0.55);
+    margin-bottom:.35rem;
+  }
+  .instrument .value-row{
+    display:flex;
+    align-items:baseline;
+    gap:.4rem;
+    margin-bottom:.4rem;
+  }
+  .instrument .value{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:2.1rem;
+  }
+  .instrument .value-unit{
+    font-family:var(--mono);
+    font-size:.85rem;
+    color:rgba(23,29,26,0.55);
+  }
+  .instrument .explain{
+    font-size:.92rem;
+    line-height:1.45;
+    color:rgba(23,29,26,0.78);
+    margin-bottom:auto;
+  }
+  .instrument .spark{ height:52px; margin-top:.8rem; }
+
+  /* ---------- ABOUT ---------- */
+  .about{ background:var(--paper-dim); }
+  .about-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:3.5rem;
+  }
+  .about h3{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:1.15rem;
+    margin:0 0 .6rem;
+  }
+  .about p{
+    font-size:1.02rem;
+    line-height:1.65;
+    color:rgba(23,29,26,0.85);
+    margin:0 0 1.4rem;
+  }
+  .why-block{
+    border-left:2px solid var(--sky);
+    padding-left:1.3rem;
+    margin-bottom:1.6rem;
+  }
+  .why-block .k{
+    font-family:var(--mono);
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--sky);
+    display:block;
+    margin-bottom:.3rem;
+  }
+
+  /* ---------- SETUP / KEY PANEL ---------- */
+  .setup{
+    max-width:640px;
+    margin:0 auto;
+    text-align:left;
+  }
+  .setup p{ font-size:.95rem; line-height:1.6; color:rgba(23,29,26,0.8); }
+  .setup form{
+    display:flex; gap:.6rem; flex-wrap:wrap;
+    margin-top:1.2rem;
+  }
+  .setup input{
+    font-family:var(--mono);
+    font-size:.85rem;
+    padding:.7rem .9rem;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:4px;
+    flex:1 1 180px;
+  }
+  .setup button{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:.85rem;
+    padding:.7rem 1.3rem;
+    border:none;
+    border-radius:4px;
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+  }
+  .setup button:hover{ background:var(--sky); }
+  .setup-note{
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:rgba(23,29,26,0.55);
+    margin-top:.8rem;
+  }
+
+  footer{
+    padding:2.5rem 6vw 3rem;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:1rem;
+    font-family:var(--mono);
+    font-size:.78rem;
+    color:rgba(23,29,26,0.6);
+  }
+  footer a{ text-decoration:underline; text-underline-offset:3px; }
+
+  @media (max-width: 720px){
+    .about-grid{ grid-template-columns:1fr; }
+    .nav-links{ gap:1rem; font-size:.75rem; }
+    section{ padding:3.5rem 5vw; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .horizon{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="horizon" id="horizon">
+  <nav class="nav">
+    <a href="#top" style="font-weight:600;">AirWatch</a>
+    <div class="nav-links">
+      <a href="#readings">Readings</a>
+      <a href="#about">About</a>
+      <a href="#setup">Connect data</a>
+    </div>
+  </nav>
+
+  <p class="eyebrow">Windsor Hills / View Park · Los Angeles</p>
+  <h1 class="wordmark">AirWatch</h1>
+  <p class="hero-tagline">A neighborhood-run air sensor filling in what the county's monitors miss. Real particulate and air quality data, updated live, for the block it's actually sitting on.</p>
+
+  <div class="reading-panel">
+    <div class="reading-now">
+      <span class="num" id="heroValue">—</span>
+      <span class="unit">µg/m³ PM2.5</span>
+    </div>
+    <span class="status-pill" id="statusPill">Connect data to load</span>
+    <span class="updated-note" id="updatedNote">Not yet connected</span>
+  </div>
+</div>
+
+<section id="readings">
+  <div class="section-head">
+    <h2>Current readings</h2>
+    <p>Five instruments, one station. Updated every time the sensor reports in.</p>
+  </div>
+
+  <div class="instruments">
+    <div class="instrument">
+      <span class="label">PM2.5</span>
+      <div class="value-row"><span class="value" id="v-pm25">—</span><span class="value-unit">µg/m³</span></div>
+      <p class="explain">Fine particles small enough to reach deep into the lungs. The main number health guidelines are built around.</p>
+      <canvas class="spark" id="c-pm25"></canvas>
+    </div>
+    <div class="instrument">
+      <span class="label">PM10</span>
+      <div class="value-row"><span class="value" id="v-pm10">—</span><span class="value-unit">µg/m³</span></div>
+      <p class="explain">Coarser dust and particles — road dust, pollen, construction. Less deeply inhaled than PM2.5, still worth tracking.</p>
+      <canvas class="spark" id="c-pm10"></canvas>
+    </div>
+    <div class="instrument">
+      <span class="label">Temperature</span>
+      <div class="value-row"><span class="value" id="v-temp">—</span><span class="value-unit">°C</span></div>
+      <p class="explain">Context, not pollution — heat affects how particles disperse and how readings should be interpreted.</p>
+      <canvas class="spark" id="c-temp"></canvas>
+    </div>
+    <div class="instrument">
+      <span class="label">Humidity</span>
+      <div class="value-row"><span class="value" id="v-humid">—</span><span class="value-unit">%</span></div>
+      <p class="explain">Moisture in the air. Also shapes how particulate sensors read, so it's tracked alongside pollution data.</p>
+      <canvas class="spark" id="c-humid"></canvas>
+    </div>
+    <div class="instrument">
+      <span class="label">Gas / VOC index</span>
+      <div class="value-row"><span class="value" id="v-gas">—</span><span class="value-unit">KΩ</span></div>
+      <p class="explain">A general indicator of volatile compounds in the air. Not a specific pollutant — a broad early signal, read alongside particulate data.</p>
+      <canvas class="spark" id="c-gas"></canvas>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="section-head">
+    <h2>Why this exists</h2>
+    <p>The reasoning behind the project, and behind what's on this page.</p>
+  </div>
+  <div class="about-grid">
+    <div>
+      <h3>The gap</h3>
+      <p>Los Angeles County spans over 4,000 square miles, but its official air monitoring network is sparse. Many neighborhoods — including this one — sit miles from the nearest official station, which means residents have no reliable way to know what they're actually breathing on a given day. AirWatch is a small, low-cost station built to close that gap for one specific place, rather than waiting on county-wide coverage that may never arrive at this scale.</p>
+      <h3>What it isn't</h3>
+      <p>This isn't lab-grade regulatory equipment, and it doesn't claim to be. It's a low-cost sensor built to catch trends and give residents a real, local reference point — a supplement to official monitoring, not a replacement for it.</p>
+    </div>
+    <div>
+      <div class="why-block">
+        <span class="k">On the hardware</span>
+        An ESP32 microcontroller reads a laser particulate sensor (PMS5003) and an environmental gas sensor (BME680), then pushes readings over WiFi every 30–60 seconds.
+      </div>
+      <div class="why-block">
+        <span class="k">On the data</span>
+        Every reading is timestamped and kept, so trends over hours, days, and weeks are what this station is actually for — not just a single live number.
+      </div>
+      <div class="why-block">
+        <span class="k">On this page</span>
+        Built to be readable by a neighbor, not just an engineer — plain labels, plain explanations, updated automatically.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="setup">
+  <div class="section-head">
+    <h2>Connect your data</h2>
+    <p>One-time setup, done in your browser only.</p>
+  </div>
+  <div class="setup">
+    <p>This page pulls live numbers directly from your Adafruit IO account. Enter your Adafruit IO username and Active Key below — they're saved only in this browser (never sent anywhere but Adafruit's API, and never written into this page's code), so they stay out of your public GitHub repo.</p>
+    <form id="credForm">
+      <input type="text" id="aioUser" placeholder="Adafruit IO username" autocomplete="off">
+      <input type="password" id="aioKey" placeholder="Adafruit IO Active Key" autocomplete="off">
+      <button type="submit">Connect</button>
+    </form>
+    <p class="setup-note">Use a key with read-only scope if your account supports one. This page never displays your key back on screen.</p>
+  </div>
+</section>
+
+<footer>
+  <span>AirWatch — a hyperlocal air quality project. Data via Adafruit IO.</span>
+  <span><a href="https://github.com/" target="_blank">View the code on GitHub</a></span>
+</footer>
+
+<script>
+(function(){
+  const FEEDS = ['pm2-5','pm10','temperature','humidity','gas'];
+  const els = {
+    'pm2-5':  { val:'v-pm25',  spark:'c-pm25' },
+    'pm10':   { val:'v-pm10',  spark:'c-pm10' },
+    'temperature': { val:'v-temp', spark:'c-temp' },
+    'humidity': { val:'v-humid', spark:'c-humid' },
+    'gas': { val:'v-gas', spark:'c-gas' }
+  };
+  const charts = {};
+
+  function creds(){
+    return {
+      user: localStorage.getItem('aw_user') || '',
+      key: localStorage.getItem('aw_key') || ''
+    };
+  }
+
+  function setStatus(pm25){
+    const pill = document.getElementById('statusPill');
+    const horizon = document.getElementById('horizon');
+    let label, color;
+    if (pm25 <= 12) { label = 'Good'; color = 'linear-gradient(180deg, #3E6E8E 0%, #6F9AAE 35%, #C7C3AE 70%, #EEF0EA 100%)'; }
+    else if (pm25 <= 35) { label = 'Moderate'; color = 'linear-gradient(180deg, #4C7A8E 0%, #A98F6E 45%, #D9C79E 75%, #EEF0EA 100%)'; }
+    else if (pm25 <= 55) { label = 'Unhealthy for Sensitive Groups'; color = 'linear-gradient(180deg, #7A6A4C 0%, #C98A3B 45%, #E3C48B 75%, #EEF0EA 100%)'; }
+    else { label = 'Unhealthy'; color = 'linear-gradient(180deg, #6B3A2E 0%, #B24C3C 45%, #E0A08F 75%, #EEF0EA 100%)'; }
+    pill.textContent = label;
+    horizon.style.background = color;
+  }
+
+  async function fetchFeed(feedKey, user, key){
+    const url = `https://io.adafruit.com/api/v2/${user}/feeds/${feedKey}/data?limit=20`;
+    const res = await fetch(url, { headers: { 'X-AIO-Key': key } });
+    if (!res.ok) throw new Error('Feed fetch failed: ' + feedKey);
+    return res.json(); // newest first
+  }
+
+  function renderSpark(canvasId, points){
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const data = points.slice().reverse().map(p => parseFloat(p.value));
+    const labels = points.slice().reverse().map(p => p.created_at);
+    if (charts[canvasId]) { charts[canvasId].destroy(); }
+    charts[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{ data, borderColor:'#3E6E8E', borderWidth:2, pointRadius:0, tension:.35, fill:true, backgroundColor:'rgba(62,110,142,0.08)' }] },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{enabled:false} },
+        scales:{ x:{display:false}, y:{display:false} },
+        elements:{ line:{ capBezierPoints:true } }
+      }
+    });
+  }
+
+  async function refresh(){
+    const { user, key } = creds();
+    if (!user || !key) return;
+
+    try {
+      const results = {};
+      for (const feed of FEEDS) {
+        results[feed] = await fetchFeed(feed, user, key);
+      }
+
+      const latest = k => results[k] && results[k][0] ? parseFloat(results[k][0].value) : null;
+
+      document.getElementById('v-pm25').textContent  = latest('pm2-5')  ?? '—';
+      document.getElementById('v-pm10').textContent  = latest('pm10')  ?? '—';
+      document.getElementById('v-temp').textContent  = latest('temperature') !== null ? latest('temperature').toFixed(1) : '—';
+      document.getElementById('v-humid').textContent = latest('humidity') !== null ? latest('humidity').toFixed(1) : '—';
+      document.getElementById('v-gas').textContent   = latest('gas') !== null ? latest('gas').toFixed(1) : '—';
+
+      document.getElementById('heroValue').textContent = latest('pm2-5') ?? '—';
+      if (latest('pm2-5') !== null) setStatus(latest('pm2-5'));
+
+      document.getElementById('updatedNote').textContent =
+        'Last updated ' + new Date().toLocaleTimeString();
+
+      FEEDS.forEach(f => renderSpark(els[f].spark, results[f]));
+
+    } catch (e) {
+      document.getElementById('updatedNote').textContent = 'Could not load data — check your key';
+      console.error(e);
+    }
+  }
+
+  document.getElementById('credForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const user = document.getElementById('aioUser').value.trim();
+    const key = document.getElementById('aioKey').value.trim();
+    if (!user || !key) return;
+    localStorage.setItem('aw_user', user);
+    localStorage.setItem('aw_key', key);
+    document.getElementById('aioKey').value = '';
+    refresh();
+  });
+
+  // Prefill username field if remembered (never prefill the key)
+  window.addEventListener('DOMContentLoaded', () => {
+    const { user } = creds();
+    if (user) document.getElementById('aioUser').value = user;
+    refresh();
+    setInterval(refresh, 60000);
+  });
+})();
+</script>
+
+</body>
+</html>
