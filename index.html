@@ -15,7 +15,6 @@
     --paper-dim:#E2E5DC;
     --line: rgba(23,29,26,0.12);
     --sky:#3E6E8E;
-    --sky-dim: rgba(62,110,142,0.12);
     --amber:#C98A3B;
     --good:#4C8B5D;
     --bad:#B24C3C;
@@ -23,8 +22,8 @@
     --display: 'Space Grotesk', sans-serif;
     --body: 'Source Serif 4', serif;
   }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
   body{
     margin:0;
     background:var(--paper);
@@ -32,12 +31,12 @@
     font-family:var(--body);
     -webkit-font-smoothing:antialiased;
   }
-  a{color:inherit;}
+  a{ color:inherit; }
 
   /* ---------- HERO / HORIZON ---------- */
   .horizon{
     position:relative;
-    min-height:82vh;
+    min-height:78vh;
     display:flex;
     flex-direction:column;
     justify-content:flex-end;
@@ -45,16 +44,6 @@
     background: linear-gradient(180deg, #3E6E8E 0%, #6F9AAE 35%, #C7C3AE 70%, #EEF0EA 100%);
     transition: background 1.2s ease;
     overflow:hidden;
-  }
-  .horizon::before{
-    content:"";
-    position:absolute; inset:0;
-    background-image:
-      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.5) 0, transparent 60%),
-      radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,.4) 0, transparent 60%),
-      radial-gradient(1.5px 1.5px at 60% 30%, rgba(255,255,255,.35) 0, transparent 60%);
-    opacity:.5;
-    pointer-events:none;
   }
   .nav{
     position:absolute; top:0; left:0; right:0;
@@ -78,8 +67,7 @@
     text-transform:uppercase;
     color:rgba(255,255,255,0.85);
     margin:0 0 1rem;
-    z-index:2;
-    position:relative;
+    position:relative; z-index:2;
   }
   h1.wordmark{
     font-family:var(--display);
@@ -88,9 +76,7 @@
     line-height:.95;
     margin:0 0 1.2rem;
     color:#fff;
-    text-shadow: 0 2px 30px rgba(0,0,0,0.08);
-    z-index:2;
-    position:relative;
+    position:relative; z-index:2;
   }
   .hero-tagline{
     max-width:38rem;
@@ -98,8 +84,7 @@
     line-height:1.55;
     color:rgba(255,255,255,0.94);
     margin:0 0 2.4rem;
-    z-index:2;
-    position:relative;
+    position:relative; z-index:2;
   }
 
   .reading-panel{
@@ -107,14 +92,9 @@
     align-items:flex-end;
     gap:2.5rem;
     flex-wrap:wrap;
-    z-index:2;
-    position:relative;
+    position:relative; z-index:2;
   }
-  .reading-now{
-    display:flex;
-    align-items:baseline;
-    gap:.6rem;
-  }
+  .reading-now{ display:flex; align-items:baseline; gap:.6rem; }
   .reading-now .num{
     font-family:var(--display);
     font-weight:700;
@@ -131,7 +111,6 @@
     font-family:var(--display);
     font-weight:600;
     font-size:.95rem;
-    letter-spacing:.03em;
     padding:.55rem 1.1rem;
     border-radius:100px;
     background:rgba(255,255,255,0.16);
@@ -172,6 +151,7 @@
   }
 
   /* ---------- INSTRUMENT GRID ---------- */
+  /* Fixed-height cells so live-refreshing charts never change page length */
   .instruments{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
@@ -182,9 +162,10 @@
   .instrument{
     background:var(--paper);
     padding:1.6rem 1.6rem 1.2rem;
-    display:flex;
-    flex-direction:column;
-    min-height:230px;
+    height:280px;
+    display:grid;
+    grid-template-rows:auto auto 1fr 56px;
+    overflow:hidden;
   }
   .instrument .label{
     font-family:var(--mono);
@@ -192,18 +173,18 @@
     letter-spacing:.08em;
     text-transform:uppercase;
     color:rgba(23,29,26,0.55);
-    margin-bottom:.35rem;
   }
   .instrument .value-row{
     display:flex;
     align-items:baseline;
     gap:.4rem;
-    margin-bottom:.4rem;
+    margin:.35rem 0;
   }
   .instrument .value{
     font-family:var(--display);
     font-weight:700;
     font-size:2.1rem;
+    line-height:1;
   }
   .instrument .value-unit{
     font-family:var(--mono);
@@ -211,85 +192,46 @@
     color:rgba(23,29,26,0.55);
   }
   .instrument .explain{
-    font-size:.92rem;
-    line-height:1.45;
+    font-size:.9rem;
+    line-height:1.42;
     color:rgba(23,29,26,0.78);
-    margin-bottom:auto;
+    margin:0;
+    overflow:hidden;
   }
-  .instrument .spark{ height:52px; margin-top:.8rem; }
+  /* Sparkline: fixed-size relative wrapper, canvas fills it absolutely.
+     This is what stops Chart.js from ever growing the page on refresh. */
+  .spark-wrap{
+    position:relative;
+    width:100%;
+    height:56px;
+  }
+  .spark-wrap canvas{
+    position:absolute;
+    inset:0;
+    width:100% !important;
+    height:100% !important;
+  }
 
   /* ---------- ABOUT ---------- */
   .about{ background:var(--paper-dim); }
-  .about-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:3.5rem;
-  }
-  .about h3{
-    font-family:var(--display);
-    font-weight:600;
-    font-size:1.15rem;
-    margin:0 0 .6rem;
-  }
-  .about p{
-    font-size:1.02rem;
-    line-height:1.65;
-    color:rgba(23,29,26,0.85);
-    margin:0 0 1.4rem;
-  }
-  .why-block{
-    border-left:2px solid var(--sky);
-    padding-left:1.3rem;
-    margin-bottom:1.6rem;
-  }
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:3.5rem; }
+  .about h3{ font-family:var(--display); font-weight:600; font-size:1.15rem; margin:0 0 .6rem; }
+  .about p{ font-size:1.02rem; line-height:1.65; color:rgba(23,29,26,0.85); margin:0 0 1.4rem; }
+  .why-block{ border-left:2px solid var(--sky); padding-left:1.3rem; margin-bottom:1.6rem; }
   .why-block .k{
-    font-family:var(--mono);
-    font-size:.72rem;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:var(--sky);
-    display:block;
-    margin-bottom:.3rem;
+    font-family:var(--mono); font-size:.72rem; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--sky); display:block; margin-bottom:.3rem;
   }
 
-  /* ---------- SETUP / KEY PANEL ---------- */
-  .setup{
+  .data-note{
     max-width:640px;
-    margin:0 auto;
-    text-align:left;
-  }
-  .setup p{ font-size:.95rem; line-height:1.6; color:rgba(23,29,26,0.8); }
-  .setup form{
-    display:flex; gap:.6rem; flex-wrap:wrap;
-    margin-top:1.2rem;
-  }
-  .setup input{
     font-family:var(--mono);
-    font-size:.85rem;
-    padding:.7rem .9rem;
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:4px;
-    flex:1 1 180px;
+    font-size:.82rem;
+    line-height:1.6;
+    color:rgba(23,29,26,0.65);
+    min-height: 1.2em;
   }
-  .setup button{
-    font-family:var(--display);
-    font-weight:600;
-    font-size:.85rem;
-    padding:.7rem 1.3rem;
-    border:none;
-    border-radius:4px;
-    background:var(--ink);
-    color:var(--paper);
-    cursor:pointer;
-  }
-  .setup button:hover{ background:var(--sky); }
-  .setup-note{
-    font-family:var(--mono);
-    font-size:.72rem;
-    color:rgba(23,29,26,0.55);
-    margin-top:.8rem;
-  }
+  .data-note a{ color:var(--sky); }
 
   footer{
     padding:2.5rem 6vw 3rem;
@@ -308,6 +250,7 @@
     .about-grid{ grid-template-columns:1fr; }
     .nav-links{ gap:1rem; font-size:.75rem; }
     section{ padding:3.5rem 5vw; }
+    .instrument{ height:260px; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -324,7 +267,6 @@
     <div class="nav-links">
       <a href="#readings">Readings</a>
       <a href="#about">About</a>
-      <a href="#setup">Connect data</a>
     </div>
   </nav>
 
@@ -337,15 +279,15 @@
       <span class="num" id="heroValue">—</span>
       <span class="unit">µg/m³ PM2.5</span>
     </div>
-    <span class="status-pill" id="statusPill">Connect data to load</span>
-    <span class="updated-note" id="updatedNote">Not yet connected</span>
+    <span class="status-pill" id="statusPill">Loading…</span>
+    <span class="updated-note" id="updatedNote">Connecting to sensor feed…</span>
   </div>
 </div>
 
 <section id="readings">
   <div class="section-head">
     <h2>Current readings</h2>
-    <p>Five instruments, one station. Updated every time the sensor reports in.</p>
+    <p>Five instruments, one station. Updated roughly every minute.</p>
   </div>
 
   <div class="instruments">
@@ -353,33 +295,35 @@
       <span class="label">PM2.5</span>
       <div class="value-row"><span class="value" id="v-pm25">—</span><span class="value-unit">µg/m³</span></div>
       <p class="explain">Fine particles small enough to reach deep into the lungs. The main number health guidelines are built around.</p>
-      <canvas class="spark" id="c-pm25"></canvas>
+      <div class="spark-wrap"><canvas id="c-pm25"></canvas></div>
     </div>
     <div class="instrument">
       <span class="label">PM10</span>
       <div class="value-row"><span class="value" id="v-pm10">—</span><span class="value-unit">µg/m³</span></div>
       <p class="explain">Coarser dust and particles — road dust, pollen, construction. Less deeply inhaled than PM2.5, still worth tracking.</p>
-      <canvas class="spark" id="c-pm10"></canvas>
+      <div class="spark-wrap"><canvas id="c-pm10"></canvas></div>
     </div>
     <div class="instrument">
       <span class="label">Temperature</span>
       <div class="value-row"><span class="value" id="v-temp">—</span><span class="value-unit">°C</span></div>
-      <p class="explain">Context, not pollution — heat affects how particles disperse and how readings should be interpreted.</p>
-      <canvas class="spark" id="c-temp"></canvas>
+      <p class="explain">Context, not pollution — heat affects how particles disperse and how readings should be read.</p>
+      <div class="spark-wrap"><canvas id="c-temp"></canvas></div>
     </div>
     <div class="instrument">
       <span class="label">Humidity</span>
       <div class="value-row"><span class="value" id="v-humid">—</span><span class="value-unit">%</span></div>
       <p class="explain">Moisture in the air. Also shapes how particulate sensors read, so it's tracked alongside pollution data.</p>
-      <canvas class="spark" id="c-humid"></canvas>
+      <div class="spark-wrap"><canvas id="c-humid"></canvas></div>
     </div>
     <div class="instrument">
       <span class="label">Gas / VOC index</span>
       <div class="value-row"><span class="value" id="v-gas">—</span><span class="value-unit">KΩ</span></div>
-      <p class="explain">A general indicator of volatile compounds in the air. Not a specific pollutant — a broad early signal, read alongside particulate data.</p>
-      <canvas class="spark" id="c-gas"></canvas>
+      <p class="explain">A general indicator of volatile compounds. Not a specific pollutant — a broad early signal, read alongside particulate data.</p>
+      <div class="spark-wrap"><canvas id="c-gas"></canvas></div>
     </div>
   </div>
+
+  <p class="data-note" id="dataNote"></p>
 </section>
 
 <section class="about" id="about">
@@ -397,7 +341,7 @@
     <div>
       <div class="why-block">
         <span class="k">On the hardware</span>
-        An ESP32 microcontroller reads a laser particulate sensor (PMS5003) and an environmental gas sensor (BME680), then pushes readings over WiFi every 30–60 seconds.
+        An ESP32 microcontroller reads a laser particulate sensor (PMS5003) and an environmental gas sensor (BME680), then pushes readings over WiFi roughly once a minute.
       </div>
       <div class="why-block">
         <span class="k">On the data</span>
@@ -405,25 +349,9 @@
       </div>
       <div class="why-block">
         <span class="k">On this page</span>
-        Built to be readable by a neighbor, not just an engineer — plain labels, plain explanations, updated automatically.
+        Built to be readable by a neighbor, not just an engineer — plain labels, plain explanations, updated automatically, no login required.
       </div>
     </div>
-  </div>
-</section>
-
-<section id="setup">
-  <div class="section-head">
-    <h2>Connect your data</h2>
-    <p>One-time setup, done in your browser only.</p>
-  </div>
-  <div class="setup">
-    <p>This page pulls live numbers directly from your Adafruit IO account. Enter your Adafruit IO username and Active Key below — they're saved only in this browser (never sent anywhere but Adafruit's API, and never written into this page's code), so they stay out of your public GitHub repo.</p>
-    <form id="credForm">
-      <input type="text" id="aioUser" placeholder="Adafruit IO username" autocomplete="off">
-      <input type="password" id="aioKey" placeholder="Adafruit IO Active Key" autocomplete="off">
-      <button type="submit">Connect</button>
-    </form>
-    <p class="setup-note">Use a key with read-only scope if your account supports one. This page never displays your key back on screen.</p>
   </div>
 </section>
 
@@ -434,67 +362,86 @@
 
 <script>
 (function(){
+  // Adafruit IO username whose feeds are public — no key needed to read them.
+  const AIO_USERNAME = 'EngineerLegend22';
+  const PUBLIC_DASHBOARD_URL = 'https://io.adafruit.com/' + AIO_USERNAME + '/dashboards';
+
   const FEEDS = ['pm2-5','pm10','temperature','humidity','gas'];
   const els = {
-    'pm2-5':  { val:'v-pm25',  spark:'c-pm25' },
-    'pm10':   { val:'v-pm10',  spark:'c-pm10' },
-    'temperature': { val:'v-temp', spark:'c-temp' },
-    'humidity': { val:'v-humid', spark:'c-humid' },
-    'gas': { val:'v-gas', spark:'c-gas' }
+    'pm2-5':       { val:'v-pm25',  canvas:'c-pm25' },
+    'pm10':        { val:'v-pm10',  canvas:'c-pm10' },
+    'temperature': { val:'v-temp',  canvas:'c-temp' },
+    'humidity':    { val:'v-humid', canvas:'c-humid' },
+    'gas':         { val:'v-gas',   canvas:'c-gas' }
   };
   const charts = {};
-
-  function creds(){
-    return {
-      user: localStorage.getItem('aw_user') || '',
-      key: localStorage.getItem('aw_key') || ''
-    };
-  }
 
   function setStatus(pm25){
     const pill = document.getElementById('statusPill');
     const horizon = document.getElementById('horizon');
-    let label, color;
-    if (pm25 <= 12) { label = 'Good'; color = 'linear-gradient(180deg, #3E6E8E 0%, #6F9AAE 35%, #C7C3AE 70%, #EEF0EA 100%)'; }
-    else if (pm25 <= 35) { label = 'Moderate'; color = 'linear-gradient(180deg, #4C7A8E 0%, #A98F6E 45%, #D9C79E 75%, #EEF0EA 100%)'; }
-    else if (pm25 <= 55) { label = 'Unhealthy for Sensitive Groups'; color = 'linear-gradient(180deg, #7A6A4C 0%, #C98A3B 45%, #E3C48B 75%, #EEF0EA 100%)'; }
-    else { label = 'Unhealthy'; color = 'linear-gradient(180deg, #6B3A2E 0%, #B24C3C 45%, #E0A08F 75%, #EEF0EA 100%)'; }
+    let label, bg;
+    if (pm25 <= 12) { label = 'Good'; bg = 'linear-gradient(180deg, #3E6E8E 0%, #6F9AAE 35%, #C7C3AE 70%, #EEF0EA 100%)'; }
+    else if (pm25 <= 35) { label = 'Moderate'; bg = 'linear-gradient(180deg, #4C7A8E 0%, #A98F6E 45%, #D9C79E 75%, #EEF0EA 100%)'; }
+    else if (pm25 <= 55) { label = 'Unhealthy for Sensitive Groups'; bg = 'linear-gradient(180deg, #7A6A4C 0%, #C98A3B 45%, #E3C48B 75%, #EEF0EA 100%)'; }
+    else { label = 'Unhealthy'; bg = 'linear-gradient(180deg, #6B3A2E 0%, #B24C3C 45%, #E0A08F 75%, #EEF0EA 100%)'; }
     pill.textContent = label;
-    horizon.style.background = color;
+    horizon.style.background = bg;
   }
 
-  async function fetchFeed(feedKey, user, key){
-    const url = `https://io.adafruit.com/api/v2/${user}/feeds/${feedKey}/data?limit=20`;
-    const res = await fetch(url, { headers: { 'X-AIO-Key': key } });
-    if (!res.ok) throw new Error('Feed fetch failed: ' + feedKey);
+  async function fetchFeed(feedKey){
+    // Public feeds can be read with no API key at all.
+    const url = `https://io.adafruit.com/api/v2/${AIO_USERNAME}/feeds/${feedKey}/data?limit=20`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' on feed ' + feedKey);
     return res.json(); // newest first
   }
 
+  // Renders into a canvas that lives inside a fixed-height .spark-wrap div,
+  // so the chart can never push the page taller — it just redraws in place.
   function renderSpark(canvasId, points){
-    const ctx = document.getElementById(canvasId).getContext('2d');
+    const canvas = document.getElementById(canvasId);
     const data = points.slice().reverse().map(p => parseFloat(p.value));
-    const labels = points.slice().reverse().map(p => p.created_at);
-    if (charts[canvasId]) { charts[canvasId].destroy(); }
+
+    if (charts[canvasId]) {
+      // Update in place instead of destroy/recreate — avoids any canvas
+      // size drift between redraws.
+      charts[canvasId].data.labels = data.map((_, i) => i);
+      charts[canvasId].data.datasets[0].data = data;
+      charts[canvasId].update('none');
+      return;
+    }
+
+    const ctx = canvas.getContext('2d');
     charts[canvasId] = new Chart(ctx, {
       type: 'line',
-      data: { labels, datasets: [{ data, borderColor:'#3E6E8E', borderWidth:2, pointRadius:0, tension:.35, fill:true, backgroundColor:'rgba(62,110,142,0.08)' }] },
+      data: {
+        labels: data.map((_, i) => i),
+        datasets: [{
+          data,
+          borderColor:'#3E6E8E',
+          borderWidth:2,
+          pointRadius:0,
+          tension:.35,
+          fill:true,
+          backgroundColor:'rgba(62,110,142,0.08)'
+        }]
+      },
       options: {
-        responsive:true, maintainAspectRatio:false,
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:false,
+        resizeDelay: 0,
         plugins:{ legend:{display:false}, tooltip:{enabled:false} },
-        scales:{ x:{display:false}, y:{display:false} },
-        elements:{ line:{ capBezierPoints:true } }
+        scales:{ x:{display:false}, y:{display:false} }
       }
     });
   }
 
   async function refresh(){
-    const { user, key } = creds();
-    if (!user || !key) return;
-
     try {
       const results = {};
       for (const feed of FEEDS) {
-        results[feed] = await fetchFeed(feed, user, key);
+        results[feed] = await fetchFeed(feed);
       }
 
       const latest = k => results[k] && results[k][0] ? parseFloat(results[k][0].value) : null;
@@ -502,38 +449,29 @@
       document.getElementById('v-pm25').textContent  = latest('pm2-5')  ?? '—';
       document.getElementById('v-pm10').textContent  = latest('pm10')  ?? '—';
       document.getElementById('v-temp').textContent  = latest('temperature') !== null ? latest('temperature').toFixed(1) : '—';
-      document.getElementById('v-humid').textContent = latest('humidity') !== null ? latest('humidity').toFixed(1) : '—';
-      document.getElementById('v-gas').textContent   = latest('gas') !== null ? latest('gas').toFixed(1) : '—';
+      document.getElementById('v-humid').textContent = latest('humidity')    !== null ? latest('humidity').toFixed(1)    : '—';
+      document.getElementById('v-gas').textContent   = latest('gas')        !== null ? latest('gas').toFixed(1)         : '—';
 
-      document.getElementById('heroValue').textContent = latest('pm2-5') ?? '—';
-      if (latest('pm2-5') !== null) setStatus(latest('pm2-5'));
+      const pm25now = latest('pm2-5');
+      document.getElementById('heroValue').textContent = pm25now ?? '—';
+      if (pm25now !== null) setStatus(pm25now);
 
       document.getElementById('updatedNote').textContent =
         'Last updated ' + new Date().toLocaleTimeString();
+      document.getElementById('dataNote').textContent = '';
 
-      FEEDS.forEach(f => renderSpark(els[f].spark, results[f]));
+      FEEDS.forEach(f => renderSpark(els[f].canvas, results[f]));
 
     } catch (e) {
-      document.getElementById('updatedNote').textContent = 'Could not load data — check your key';
+      document.getElementById('updatedNote').textContent = 'Live data unavailable right now';
+      document.getElementById('dataNote').innerHTML =
+        'Having trouble loading live data in your browser. You can view it directly on the ' +
+        '<a href="' + PUBLIC_DASHBOARD_URL + '" target="_blank">Adafruit IO dashboard</a> instead.';
       console.error(e);
     }
   }
 
-  document.getElementById('credForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const user = document.getElementById('aioUser').value.trim();
-    const key = document.getElementById('aioKey').value.trim();
-    if (!user || !key) return;
-    localStorage.setItem('aw_user', user);
-    localStorage.setItem('aw_key', key);
-    document.getElementById('aioKey').value = '';
-    refresh();
-  });
-
-  // Prefill username field if remembered (never prefill the key)
   window.addEventListener('DOMContentLoaded', () => {
-    const { user } = creds();
-    if (user) document.getElementById('aioUser').value = user;
     refresh();
     setInterval(refresh, 60000);
   });
