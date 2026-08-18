@@ -1,4 +1,8 @@
 # AirWatch-A-Low-Cost-Sensor-Network-for-Community-Air-Quality-Monitoring
+Who I am
+
+Hi, my name is Ashley and this is my Airwatch Senor Network for my city, Windsor Hills, CA! I am a 17 year old female African American who strives to learn more about hardware and softwre components, and how they help our world. 
+
 Why I built this
 
 Los Angeles County covers more than 4,000 square miles, but its official air quality monitoring network is limited. Many neighborhoods, including mine, do not have a monitor nearby. This means residents have no reliable way to know what they are breathing each day. People in my community had concerns about local air quality, but there was no local data to support those concerns or track changes over time.
